@@ -285,20 +285,27 @@ def dict_to_xml(results):
     for filename, blocks in results.items():
         for block in blocks:
             try:
+                complexity = str(block['complexity'])
+                name = block['name']
+                rank = block['rank']
+                startLineNumber = str(block['lineno'])
+                endLineNumber = str(block['endline'])
+                # Jenkins CCM blows up if we have an empty <metric/>.
+                # So only create the metric object AFTER we've extracted
+                # everything we need.
                 metric = et.SubElement(ccm, 'metric')
-                et.SubElement(metric, 'complexity').text = str(block['complexity'])
+                et.SubElement(metric, 'complexity').text = complexity
 
                 unit = et.SubElement(metric, 'unit')
-                name = block['name']
+
                 if 'classname' in block:
                     name = '{0}.{1}'.format(block['classname'], block['name'])
                 unit.text = name
 
-                et.SubElement(metric, 'classification').text = block['rank']
+                et.SubElement(metric, 'classification').text = rank
                 et.SubElement(metric, 'file').text = filename
-                et.SubElement(metric, 'startLineNumber').text = \
-                    str(block['lineno'])
-                et.SubElement(metric, 'endLineNumber').text = str(block['endline'])
+                et.SubElement(metric, 'startLineNumber').text = startLineNumber
+                et.SubElement(metric, 'endLineNumber').text = endLineNumber
             except:
                 # We don't care about errors in generating the xml from the dict:
                 sys.stderr.write('ERROR: radon failed at examining file, so it will skip it: {}\n'.format(filename))
